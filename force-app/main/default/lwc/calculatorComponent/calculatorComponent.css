@@ -1,0 +1,10 @@
+.calc-btn {
+    width: 1px;
+    margin: 4px;
+}
+
+.equation-input,
+.result-input {
+    width: 100%;
+    max-width: 250px;
+}

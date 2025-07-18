@@ -1,0 +1,46 @@
+<template>
+    <lightning-card title="Calculator" >
+        <lightning-layout horizontal-align="space" class="slds-grid_vertical-align-center">
+            <lightning-layout-item size="7">
+                <lightning-input value={equation} onchange={changeEquation}></lightning-input>
+            </lightning-layout-item>
+            
+            <lightning-layout-item size="2">
+                <lightning-button label="Del" onclick={removeLastChar}></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout horizontal-align="center">
+            <lightning-layout-item size="9">
+                <lightning-input value={result} disabled></lightning-input>
+            </lightning-layout-item>
+        </lightning-layout>
+        
+        <lightning-layout horizontal-align="center" vertical-align="center"  multiple-rows="true">
+            <template for:each={chars} for:item="btn">
+                <lightning-layout-item key={btn.id} size="3">
+                    <lightning-button 
+                    class="calc-btn"  
+                    label={btn.value} 
+                    data-char={btn}
+                    onclick={addCharToEquation}>
+                </lightning-button>
+            </lightning-layout-item>
+        </template>
+        
+    </lightning-layout>   
+    <lightning-layout>
+        <lightning-layout-item size="3">
+            <lightning-button label="C" onclick={clearEquation}></lightning-button>
+        </lightning-layout-item>
+        <lightning-layout-item size="3">
+            <lightning-button label="0" onclick={addCharToEquation}></lightning-button>
+        </lightning-layout-item>
+        <lightning-layout-item size="3">
+            <lightning-button label="." onclick={addCharToEquation}></lightning-button>
+        </lightning-layout-item>
+        <lightning-layout-item size="3">
+            <lightning-button label="=" onclick={getResult}></lightning-button>
+        </lightning-layout-item>
+    </lightning-layout>
+</lightning-card>
+</template>

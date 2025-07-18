@@ -1,0 +1,11 @@
+<template>
+    <lightning-card title="Profile" icon-name="standard:job_profile">
+        <p class="name">Name: {displayedUser.name}</p>
+        <p>title: {displayedUser.title}</p>
+        <p>email: {displayedUser.email}</p>
+        <p>status: {displayedUser.status}</p>
+        <lightning-button label={displayedUser.status}  variant={statusButtonVariant} onclick={toggleStatus}>Switch Status</lightning-button>
+
+        <lightning-button label="Switch User" onclick={toggleUser}></lightning-button>
+    </lightning-card>
+</template>

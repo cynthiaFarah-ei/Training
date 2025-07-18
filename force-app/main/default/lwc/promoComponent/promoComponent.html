@@ -1,0 +1,17 @@
+<template>
+    <lightning-card title="Component" icon-name="doctype:ai">
+        <h1 class="slds-align_absolute-center">Promo component</h1>
+        <p lwc:if={displayX}>{x}</p>
+        <p>{names}</p>
+        <lightning-button-group>
+        <lightning-button label="Click Me" variant="brand" onclick={handleClick}></lightning-button>
+        <lightning-button label="Toggle X" variant="brand" onclick={toggleX}></lightning-button>
+
+        </lightning-button-group>
+
+        <c-child-promo-component message = {x} count={counter}></c-child-promo-component>
+        <lightning-button label="inc" onclick={incCounter}></lightning-button>
+        <lightning-button label="dec" onclick={decCounter}></lightning-button>
+        {message}
+    </lightning-card>
+</template>
