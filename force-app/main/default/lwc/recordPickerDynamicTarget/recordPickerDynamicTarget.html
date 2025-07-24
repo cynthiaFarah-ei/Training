@@ -1,0 +1,25 @@
+<template>
+    <lightning-card title="Account / Contact search">
+        <div class="pickers-container">
+            <lightning-combobox if:true={visible}
+            class="combobox"
+            name="progress"
+            label="Objects"
+            value={selected}
+            placeholder="Select Object"
+            options={options}
+            onchange={handleChange} ></lightning-combobox>
+            
+            <lightning-record-picker
+            class="record-picker"
+            label={selected}
+            placeholder={placeholder}
+            object-api-name={selected}
+            display-info={displayInfo}
+            matching-info={matchingInfo}
+            onchange={handleRecordChange}
+            >
+        </lightning-record-picker>
+    </div>
+</lightning-card>
+</template>

@@ -1,0 +1,14 @@
+<template>
+    <lightning-card title="Accounts">
+        <lightning-input value={amount} onchange={handleAmountChange}></lightning-input>
+        <template if:true={accounts}>
+            <template for:each={accounts} for:item="acc">
+                <p key={acc.Id}> {acc.Name} - {acc.TotalOppsAmount__c}</p>
+            </template>
+        </template>
+        <template if:false={accounts}>
+            <p>accounts empty</p>
+        </template>
+    </lightning-card>
+    
+</template>

@@ -1,0 +1,12 @@
+.pickers-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+.combobox{
+    width: 25%;
+}
+.record-picker{
+    width: 65%;
+}

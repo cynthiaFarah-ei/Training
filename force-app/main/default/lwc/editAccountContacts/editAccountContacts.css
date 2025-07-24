@@ -1,0 +1,20 @@
+.contactContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.contactName {
+    width: 70%;
+    margin: 0 1rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.editButton {
+    width: 30%;
+}

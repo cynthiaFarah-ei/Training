@@ -1,0 +1,19 @@
+<template>
+    <lightning-card title="Parent Component" icon-name="action:new_contact">
+        <lightning-layout>
+            <lightning-layout-item size="6">
+                <p >Child one: {child1Status}</p>
+                <c-child-component label="Child1" onchangechildstatus={handleChildEvent}></c-child-component>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="6">
+                <p>Child two: {child2Status}</p>
+                <c-child-component label="Child2"  onchangechildstatus={handleChildEvent}></c-child-component>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <hr />
+         <c-pub-comp></c-pub-comp>
+        <c-sub-comp></c-sub-comp>
+    </lightning-card>
+</template>

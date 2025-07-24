@@ -1,0 +1,10 @@
+<template>
+    <lightning-card title="Create Account">
+        <template if:true={spinnerVisible}>
+            <lightning-spinner></lightning-spinner>
+        </template>
+        <lightning-input value={accountName} onchange={handleInputChange}></lightning-input>
+        <lightning-button label="create Account" onclick={addAccount}></lightning-button>
+        <p if:true={account}>{account.Name}</p>
+    </lightning-card>
+</template>

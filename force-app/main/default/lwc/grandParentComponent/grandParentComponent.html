@@ -1,0 +1,11 @@
+<template>
+    <lightning-card title="Grand Parent Component" icon-name="standard:omni_supervisor">
+        <div>
+            <p>nb of children selected: {statusCount}</p>
+            <p>child 1 {child1status}</p>
+            <p>child 2 {child2status}</p>
+            <lightning-button label="Reset All" variant="brand" onclick={resetAllChildren}></lightning-button>
+        </div>
+        <c-parent-component onchangechildstatus={handleSelectionChange}></c-parent-component>
+    </lightning-card>
+</template>

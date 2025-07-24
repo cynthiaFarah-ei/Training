@@ -1,0 +1,12 @@
+<template>
+    <lightning-card title="Account" icon-name="standard:account">
+        <lightning-input value={maxRec} onchange={handleMaxRecChange}></lightning-input>
+        <template if:true={accounts}>
+            <template for:each={accounts} for:item="acc">
+                   <div key={acc.Id}>
+                    {acc.Name}
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>

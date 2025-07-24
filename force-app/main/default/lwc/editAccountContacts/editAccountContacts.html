@@ -1,0 +1,54 @@
+<template>
+    <lightning-card title="Related Contacts">
+        <template if:true={recordId}>
+            <template for:each={contacts} for:item="contact">
+                <div key={contact.Id} class="contactContainer">
+                    <span class="contactName">{contact.FirstName} {contact.LastName}</span>
+                    <lightning-button class="editButton" data-contact={contact.Id} label="Edit" onclick={editContact}></lightning-button>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+
+    <!-- MODAL START -->
+    <template if:true={isVisible}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- HEADER -->
+                <header class="slds-modal__header">
+                    <h2 class="slds-modal__title">Edit Contact</h2>
+                </header>
+
+                <!-- BODY -->
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-layout multiple-rows="true">
+                        <lightning-layout-item size="6">
+                            <p>First Name</p>
+                            <lightning-input value={contactFirstName} onchange={handleInputChange} data-field="FirstName"></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6">
+                            <p>Last Name</p>
+                            <lightning-input value={contactLastName} onchange={handleInputChange} data-field="LastName"></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6">
+                            <p>Email</p>
+                            <lightning-input type="email" value={contactEmail} onchange={handleInputChange} data-field="Email"></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6">
+                            <p>Mobile Phone</p>
+                            <lightning-input type="tel" value={contactPhone} onchange={handleInputChange} data-field="Phone"></lightning-input>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </div>
+
+                <!-- FOOTER -->
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={closeModal} class="slds-m-right_small"></lightning-button>
+                    <lightning-button variant="brand" label="Update" onclick={Update}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <!-- MODAL END -->
+</template>

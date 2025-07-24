@@ -1,0 +1,68 @@
+<template>
+    <lightning-card title="Create Quote">
+        <template if:true={recordId}>
+            <p>{recordId}</p>
+
+            <lightning-record-edit-form object-api-name="Quote__c" onsuccess={handleSuccess} onerror={handleError}>
+                <div class="slds-grid slds-wrap slds-gutters">
+                     <lightning-messages> </lightning-messages>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input-field field-name={startDate}></lightning-input-field>
+                    </div>
+
+                    <template if:true={officeOrRetail}>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={endDate}></lightning-input-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={paymentTerms}></lightning-input-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={gracePeriod}></lightning-input-field>
+                        </div>
+                    </template>
+
+                    <template if:true={retail}>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={retailSales}></lightning-input-field>
+                        </div>
+                    </template>
+
+                    <template if:true={land}>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={paymentTerms} value={paymentTermsValue} disabled></lightning-input-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={leaseDuration} onchange={handleLeaseDurationChange} value={leaseDurationValue}></lightning-input-field>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input-field field-name={rentReview}></lightning-input-field>
+                        </div>
+                    </template>
+
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning-input-field field-name={opportunityId} value={recordId} disabled></lightning-input-field>
+                    </div>
+
+                    <template if:true={seeUpload}>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-file-upload 
+                                label="Attach Approval"
+                                name="fileUploader"
+                                accept={acceptedFormats}
+                                record-id={recordId}
+                                multiple="false"
+                                onuploadfinished={handleUploadFinished}>
+                            </lightning-file-upload>
+                            <span if:true={uploadedImgName}>File Name: {uploadedImgName}</span>
+                        </div>
+                    </template>
+
+                    <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
+                        <lightning-button variant="brand" type="submit" label="Save"></lightning-button>
+                    </div>
+                </div>
+            </lightning-record-edit-form>
+        </template>
+    </lightning-card>
+</template>
