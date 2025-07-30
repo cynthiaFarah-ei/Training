@@ -6,9 +6,9 @@ import getContactsFullName from '@salesforce/apex/GetRelatedContacts.getContacts
 import { CloseActionScreenEvent } from 'lightning/actions';
 import getDocumentsForAccount from '@salesforce/apex/GetDocumentsForObject.getDocumentsForAccount';
 import getDocumentsForContacts from '@salesforce/apex/GetDocumentsForObject.getDocumentsForContacts';
+import insertWorkOrderDocuments from '@salesforce/apex/InsertWorkOrdersDocuments.insertWorkOrderDocuments';
 
-const FIELDSFROMWORKORDER = ["WorkOrder.AccountId"];
-const FIELDSFROMACCOUNT = ["Account.Name"];
+const FIELDSFROMWORKORDER = ["WorkOrder.AccountId", "WorkOrder.Account.Name"];
 
 export default class CallingWorkOrderForReview extends LightningElement {
     isOpen = true;
@@ -34,21 +34,11 @@ export default class CallingWorkOrderForReview extends LightningElement {
         } else if (data) {
             this.workOrder = data;
             this.accountId = data.fields.AccountId.value;
+            this.accountName = data.fields.Account.value.fields.Name.value;
+            
             console.log("Account ID from Work Order:", this.accountId);
         }
     }
-    // Get Account Name from the Account
-    // done
-    @wire(getRecord, { recordId: "$accountId", fields: FIELDSFROMACCOUNT })
-    wiredAccount({ error, data }) {
-        if (error) {
-            this.showError(error, "Error loading Account");
-        } else if (data) {
-            this.accountName = data.fields.Name.value;
-            console.log("Account Name:", this.accountName);
-        }
-    }
-    
     
     showError(error, title) {
         let message = "Unknown error";
@@ -88,13 +78,14 @@ export default class CallingWorkOrderForReview extends LightningElement {
     
     // get documents of this account 
     // returns list(docId, docName)
-    // to change
+    // to change (try1)
     @wire(getDocumentsForAccount, { accountId: "$accountId" })
     wired_getDocForAcc({ error, data }) {
         if (error) {
             this.showError(error, "Error loading Account Documents");
         } else if (data) {
             this.accountDocuments = data;
+            // ContentDocumentId,  ContentDocument.Title
             // as id and name => data.Id, data.Name
         }
     }
@@ -121,9 +112,9 @@ export default class CallingWorkOrderForReview extends LightningElement {
                         ? `${contact.FirstName || ''} ${contact.LastName || ''}`.trim() 
                         : contactId) 
                         : contactId,
-                    docsRecords: data[contactId]
-                    // docsRecords list of {docId,docName}
-                    };
+                        docsRecords: data[contactId]
+                        // docsRecords list of {ContentDocumentId, ContentDocument.Title}    
+                    }
                 });
                 
                 console.log("contacts documents is fetching : ", JSON.stringify(data));
@@ -131,19 +122,21 @@ export default class CallingWorkOrderForReview extends LightningElement {
         }
         
         
-        
+        // done
         handleDescription(event){
             this.description = event.target.value;
         }
-        
+        // done
         handleCancel() {
             // Close the quick action
             this.dispatchEvent(new CloseActionScreenEvent());
         }
         
         handleCheckboxChange(event) {
+            // account
             const accountId = this.accountId;
-            const docName = event.target.value;
+            const docId = event.target.dataset.docId;
+            console.log('selected doc id: ',docId);
             const checked = event.target.checked;
             
             if (!this.selectedDocs) {
@@ -151,11 +144,11 @@ export default class CallingWorkOrderForReview extends LightningElement {
             }
             
             if (checked) {
-                this.selectedDocs.push({ accountId, docName });
+                this.selectedDocs.push({ accountId, docId });
             } else {
                 // Remove from list
                 this.selectedDocs = this.selectedDocs.filter(
-                    doc => !(doc.accountId === accountId && doc.docName === docName)
+                    doc => !(doc.accountId === accountId && doc.docId === docId)
                 );
             }
             
@@ -164,7 +157,7 @@ export default class CallingWorkOrderForReview extends LightningElement {
         
         handleContactCheckboxChange(event) {
             const contactId = event.target.dataset.contactId;
-            const docName = event.target.dataset.docName;
+            const docId = event.target.dataset.docId;
             const checked = event.target.checked;
             
             if (!this.selectedDocs) {
@@ -172,15 +165,33 @@ export default class CallingWorkOrderForReview extends LightningElement {
             }
             
             if (checked) {
-                this.selectedDocs.push({ contactId, docName });
+                this.selectedDocs.push({ contactId, docId });
             } else {
                 // Remove from list
                 this.selectedDocs = this.selectedDocs.filter(
-                    doc => !(doc.contactId === contactId && doc.docName === docName)
+                    doc => !(doc.contactId === contactId && doc.docId === docId)
                 );
             }
             
             console.log('Selected Docs (Contacts):', this.selectedDocs);
+        }
+        handleContactInputChange(event) {
+            const contactId = event.target.dataset.contactId;
+            const desc = event.target.value?.trim();
+            
+            if (!this.selectedDocs) {
+                this.selectedDocs = [];
+            }
+            
+            let existing = this.selectedDocs.find(doc => doc.contactId === contactId);
+            
+            if (existing) {
+                existing.desc = desc;
+            } else {
+                this.selectedDocs.push({ contactId, desc });
+            }
+            
+            console.log("After desc input:", JSON.stringify(this.selectedDocs));
         }
         
         
@@ -188,16 +199,13 @@ export default class CallingWorkOrderForReview extends LightningElement {
         
         
         handleSubmit() {
-            // all inputs in an array
             const allValid = [...this.template.querySelectorAll('lightning-input')]
             .reduce((validSoFar, inputField) => {
                 inputField.reportValidity();
                 return validSoFar && inputField.checkValidity();
             }, true);
-            // check if input is invalid and report(red message if invalid)
             
             if (!allValid) {
-                // eza chi invalid stop code and toast
                 this.dispatchEvent(
                     new ShowToastEvent({
                         title: 'Validation Error',
@@ -208,19 +216,19 @@ export default class CallingWorkOrderForReview extends LightningElement {
                 return;
             }
             
+            // Update work order status and description
             const fields = {
-                Id : this.recordId,
-                Description : this.description,
-                Approval_Status__c : 'Call for Review'
-            }
-            // sar mtl object with those fields
-            const recordInput ={fields};
+                Id: this.recordId,
+                Description: this.description,
+                Approval_Status__c: 'Call for Review'
+            };
+            const recordInput = { fields };
             
             updateRecord(recordInput)
             .then(() => {
                 this.dispatchEvent(
                     new ShowToastEvent({
-                        title: 'Success',
+                        title: 'Work Order Updated',
                         message: 'Work Order updated successfully!',
                         variant: 'success'
                     })
@@ -235,31 +243,44 @@ export default class CallingWorkOrderForReview extends LightningElement {
                     })
                 );
             });
-            // const selectedArray = Array.from(this.selectedDocs);
-            // const resultMap = selectedArray.map(doc => ({
-            //     entityId: this.accountId,
-            //     documentName: doc
-            // }));
             
-            console.log('Final result:', JSON.stringify(this.selectedDocs));
+            // Save related docs to custom object
+            const docPayload = this.selectedDocs.map(doc => {
+                return {
+                    workOrderId: this.recordId,
+                    entityId: doc.accountId || doc.contactId,
+                    documentId: doc.docId || '',
+                    description: doc.desc || ''
+                };
+            });
+            console.log('doc to insert: ', JSON.stringify(docPayload));
             
-            // // create map [entityId, doc name]
-            // const resultList = [];
+            insertWorkOrderDocuments({ documentData: docPayload })
+            .then(() => {
+                console.log('✅ Apex Insert Success');
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Documents linked successfully.',
+                        variant: 'success'
+                    })
+                );
+            })
+            .catch(error => {
+                console.error('Apex Error:', JSON.stringify(error));
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Document Save Failed',
+                        message: error.body.message,
+                        variant: 'error'
+                    })
+                );
+            });
             
-            // this.selectedDocs.forEach(docName => {
-                //     resultList.push({
-            //         entityId: this.accountId,
-            //         docName: docName
-            //     });
-            // });
-            
-            // console.log('Submitted Docs:', JSON.stringify(resultList));
-            
-            
-            
-            // to close
+            // Optionally close screen
             this.dispatchEvent(new CloseActionScreenEvent());
         }
+        
         
     }
     

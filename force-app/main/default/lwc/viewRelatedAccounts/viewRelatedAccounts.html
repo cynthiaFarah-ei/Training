@@ -1,0 +1,39 @@
+<template>
+    <lightning-card title="Accounts and Their Contacts">
+        <div class="card-container">
+            <!-- <template if:true={recordId}>
+                <lightning-dual-listbox
+                name="contactsList"
+                label="Accounts and Related Contacts"
+                source-label="Accounts"
+                selected-label="Contacts"
+                options={accountOptions}
+                value={selectedContactIds}
+                disable-reordering
+                disabled
+                ></lightning-dual-listbox>
+            </template> -->
+            
+            <lightning-combobox
+            name="accountSelect"
+            label="Select an Account"
+            placeholder="Choose an account"
+            options={accountOptions}
+            value={selectedAccountId}
+            onchange={handleAccountChange}>
+        </lightning-combobox>
+        
+        <template if:true={contactOptions}>
+            <lightning-dual-listbox
+            name="contacts"
+            label="Contacts for selected Account"
+            source-label="Available Contacts"
+            selected-label="Selected"
+            options={contactOptions}
+            value={selectedContacts}
+            onchange={handleContactsChange}>
+        </lightning-dual-listbox>
+    </template>
+</div>
+</lightning-card>
+</template>

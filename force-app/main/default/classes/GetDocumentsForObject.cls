@@ -19,29 +19,29 @@ public with sharing class GetDocumentsForObject {
     }
     
     @AuraEnabled(cacheable=true)
-    public static Map<Id, List<String>> getDocumentsForContacts(List<Id> contactIds) {
-        Map<Id, List<String>> contactIdToDocNames = new Map<Id, List<String>>();
-        System.debug('in contact related doc');
+    public static Map<Id, List<ContentDocumentLink>> getDocumentsForContacts(List<Id> contactIds) {
+        Map<Id, List<ContentDocumentLink>> contactIdToDocRecords = new Map<Id, List<ContentDocumentLink>>();
+        // System.debug('in contact related doc');
         // loop through contacts and select list of documents from contentDocumentLinksss
         for (Contact contact : [
         SELECT Id,
-        (SELECT ContentDocument.Title FROM ContentDocumentLinks)
+        (SELECT ContentDocumentId, ContentDocument.Title FROM ContentDocumentLinks)
         FROM Contact
         WHERE Id IN :contactIds]) {
         System.debug('in contact loop '+contact.Id);
 
-            // for each contacts create list of doc names and loop through the documents
-            List<String> docNames = new List<String>();
+            // for each contacts create list of CDL (id, name) and loop through the documents
+            List<ContentDocumentLink> docRecords = new List<ContentDocumentLink>();
             for (ContentDocumentLink link : contact.ContentDocumentLinks) {
-                // add doc name to a list
-                docNames.add(link.ContentDocument.Title);
-                System.debug('contact id'+ contact.Id+' doc name : '+link.ContentDocument.Title);
+                // add red kelo
+                docRecords.add(link);
+                System.debug('contact id'+ contact.Id+' doc name : '+link.ContentDocument.Title+ ' doc id: '+ link.ContentDocument.Id);
             }
             // add this list to the map with corresponding contact id
-            contactIdToDocNames.put(contact.Id, docNames);
+            contactIdToDocRecords.put(contact.Id, docRecords);
         }
         
-        return contactIdToDocNames;
+        return contactIdToDocRecords;
     }
     
     

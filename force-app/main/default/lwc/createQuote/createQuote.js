@@ -4,7 +4,6 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 
 import LEASE_TYPE from "@salesforce/schema/Opportunity.Lease_Type__c";
-
 import START_DATE from '@salesforce/schema/Quote__c.Start_Date__c';
 import END_DATE from '@salesforce/schema/Quote__c.End_Date__c';
 import PAYMENT_TERMS from '@salesforce/schema/Quote__c.Payment_Terms__c';
@@ -14,22 +13,21 @@ import LEASE_DURATION from '@salesforce/schema/Quote__c.Lease_Duration__c';
 import RENT_REVIEW_FREQUENCY from '@salesforce/schema/Quote__c.Rent_Review_Frequency__c';
 import OPPORTUNITY_ID from '@salesforce/schema/Quote__c.Opportunity__c';
 
-export default class CreateQuote extends LightningElement {
+export default class CreateQuote extends NavigationMixin(LightningElement) {
     @api recordId;
-    @api objectApiName;
-    @track quoteId; // The newly created Quote Id
+    @track quoteId;
     
-    // Quote field schema references
-    startDate = START_DATE;
+    // Schema field references
+    startDate = 'Start_Date__c';
     endDate = END_DATE;
     paymentTerms = PAYMENT_TERMS;
     gracePeriod = GRACE_PERIOD;
     retailSales = RETAIL_SALES_CATEGORY;
     leaseDuration = LEASE_DURATION;
     rentReview = RENT_REVIEW_FREQUENCY;
-    opportunityId  = OPPORTUNITY_ID;
+    opportunityId = OPPORTUNITY_ID;
     
-    // Lease type flags
+    // Lease logic flags
     leaseType = '';
     retail = false;
     land = false;
@@ -37,45 +35,27 @@ export default class CreateQuote extends LightningElement {
     paymentTermsValue;
     leaseDurationValue;
     
-    toast(title, msg, variant){
-        this.dispatchEvent(new ShowToastEvent({
-            title: title,
-            message: msg,
-            variant:variant
-        }));
-    }
+    uploadedImgName = '';
     
-    navigateToQuote(qId){
-        this[NavigationMixin.Navigate]({
-            type: 'standard__recordPage',
-            attributes: {
-                recordId: qId,
-                objectApiName: 'Quote__c', 
-                actionName: 'view'
-            },
-        });
-    }
-    // Wire to get Opportunity data
+    // Retrieve Lease Type
     @wire(getRecord, { recordId: '$recordId', fields: [LEASE_TYPE] })
     wiredOpportunity({ error, data }) {
         if (data) {
             const lease = getFieldValue(data, LEASE_TYPE);
-            // const lease = data.fields.LEASE_TYPE.value;
             this.leaseType = lease;
             
-            // Reset flags first
+            // Reset flags
             this.retail = false;
             this.land = false;
             this.officeOrRetail = false;
             
-            // Set appropriate flags
             switch (lease) {
                 case 'Office':
                 this.officeOrRetail = true;
                 break;
                 case 'Retail':
                 this.retail = true;
-                this.officeOrRetail = true; // Retail also uses office fields
+                this.officeOrRetail = true;
                 break;
                 case 'Land':
                 this.land = true;
@@ -87,30 +67,17 @@ export default class CreateQuote extends LightningElement {
         }
     }
     
-    get seeUpload(){
-        return this.leaseDurationValue > 30 ? true:false;
+    get seeUpload() {
+        return this.leaseDurationValue > 30;
     }
-    handleLeaseDurationChange(event){
-        this.leaseDurationValue = event.target.value;
+    
+    handleLeaseDurationChange(event) {
+        this.leaseDurationValue = parseInt(event.target.value, 10);
     }
+    
     get acceptedFormats() {
         return ['.pdf', '.png'];
     }
-    handleSuccess(event) {
-        const qId = event.detail.id;
-        this.quoteId = event.detail.id; // The newly created Quote Id from the form success event
-        console.log('Quote created with Id:', this.quoteId);
-        
-        // this.toast('Quote Creation','Quote is successfully created' ,'success');
-        // setTimeout(this.navigateToQuote(qId), 1000);
-        this.closeAction();
-
-    }
-    handleError(event){
-        console.log('error creating quote');
-    }
-    
-    uploadedImgName = '';
     
     handleUploadFinished(event) {
         const uploadedFiles = event.detail.files;
@@ -119,4 +86,53 @@ export default class CreateQuote extends LightningElement {
         }
     }
     
+    handleSuccess(event) {
+        const qId = event.detail.id;
+        this.quoteId = qId;
+        console.log('Quote created with Id:', qId);
+        
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Success',
+            message: 'Quote successfully created!',
+            variant: 'success'
+        }));
+        
+        this.navigateToQuote(qId);
+    }
+    
+    handleError(event) {
+        const detail = event?.detail || 'Unknown error';
+        console.error('Error creating quote:', detail);
+        
+        this.dispatchEvent(new ShowToastEvent({
+            title: 'Error',
+            message: typeof detail === 'string' ? detail : JSON.stringify(detail),
+            variant: 'error'
+        }));
+    }
+    handleSubmit(event) {
+        // Prevent default form submit
+        event.preventDefault();
+        
+        const fields = event.detail.fields;
+        
+        // Inject value for land quotes
+        if (this.land) {
+            fields.Payment_Terms__c = 4;
+        }
+        
+        this.template.querySelector('lightning-record-edit-form').submit(fields);
+    }
+    
+    
+    navigateToQuote(qId) {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: qId,
+                objectApiName: 'Quote__c',
+                actionName: 'view'
+            }
+        });
+    }
 }
